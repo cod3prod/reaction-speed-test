@@ -1,154 +1,68 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { twMerge } from "tailwind-merge";
+import ResultModal from "./result-modal";
+import "animate.css";
+import { useTest } from "@/hooks/ues-test";
 
 export default function ReactionSpeed() {
-  const [history, setHistory] = useState<number[]>([]);
-  const [canClick, setCanClick] = useState(false);
-  const [isWaiting, setIsWaiting] = useState(true);
-  const [startTime, setStartTime] = useState(0);
-  const [now, setNow] = useState(0);
+  const {
+    history,
+    canClick,
+    isWaiting,
+    dialogRef,
+    handleMeasure,
+    handleStop,
+    handleReset,
+  } = useTest();
 
-  const intervalRef = useRef<number | null>(null);
-  const timeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (history.length === 5) {
-      setIsWaiting(true);
-      setCanClick(false);
-    }
-
-    return () => {
-      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
-      if (intervalRef.current !== null) clearInterval(intervalRef.current);
-    };
-  }, [history]);
-
-  function handleMeasure() {
-    console.log("Measure 시작");
-    setIsWaiting(false);
-    setCanClick(false);
-
-    timeoutRef.current = window.setTimeout(() => {
-      console.log("초록불 켜짐 (canClick: true)");
-      setCanClick(true);
-      setStartTime(0);
-      setNow(0);
-    }, Math.random() * 2000 + 1000);
-  }
-
-  function handleStart() {
-    if (!canClick) {
-      console.log("handleStart 실행 취소 (canClick이 false)");
-      return;
-    }
-
-    console.log("Reaction 시작");
-    setStartTime(Date.now());
-    setNow(Date.now());
-
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-    }
-
-    intervalRef.current = window.setInterval(() => {
-      setNow(Date.now());
-    }, 10);
-
-  }
-  useEffect(()=>{
-    if(!canClick){
-      console.log("canClick이 false");
-      return;
-    }
-    handleStart();
-  }, [canClick])
-
-  function handleStop() {
-    if (!canClick) {
-      console.log("handleStop 실행 취소 (canClick이 false)");
-      return;
-    }
-
-    const reactionTime = now - startTime;
-    if (reactionTime <= 0) return;
-
-    console.log(`Reaction Time: ${reactionTime} ms`);
-    setHistory((prev) => [...prev, reactionTime]);
-    setCanClick(false);
-
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-    }
-
-    setIsWaiting(true);
-  }
-
-  function handleReset() {
-    console.log("리셋");
-    setHistory([]);
-    setIsWaiting(true);
-    setCanClick(false);
-    setStartTime(0);
-    setNow(0);
-
-    if (intervalRef.current !== null) {
-      clearInterval(intervalRef.current);
-    }
-    if (timeoutRef.current !== null) {
-      clearTimeout(timeoutRef.current);
-    }
-  }
-
-  const bgColor = twMerge(
-    "h-screen flex flex-col items-center justify-center text-white",
-    isWaiting ? "bg-blue-500" : canClick ? "bg-green-500" : "bg-red-500"
-  );
+  const bgColor = isWaiting
+    ? "bg-blue-500"
+    : canClick
+    ? "bg-green-500"
+    : "bg-red-500";
 
   return (
-    <section className={bgColor}>
-      <h1 className="text-2xl font-bold mb-4">Reaction Speed Test</h1>
-      <p className="mb-2">Number of times remaining: {5 - history.length}</p>
-      {history.length === 5 && (
-        <p className="mb-4">Game Over! Reset to try again.</p>
+    <section
+      className={`h-screen flex flex-col items-center justify-center text-white ${bgColor} p-6 rounded-lg text-center`}
+      onClick={isWaiting ? handleMeasure : handleStop}
+    >
+      <h1 className="text-2xl font-bold mb-4 animate__animated animate__bounce">
+        Reaction Speed Test
+      </h1>
+      <p className="mb-2">Number of tries remaining: {5 - history.length}</p>
+
+      {history.length === 5 ? (
+        <p className="mb-4 text-red-500">Game Over! Reset to try again.</p>
+      ) : isWaiting ? (
+        <p className="text-white text-2xl mb-4">Click Again</p>
+      ) : (
+        <p className="text-white text-2xl mb-4">
+          {canClick ? "Click to Stop" : "Wait for Green"}
+        </p>
       )}
-      <div className="space-y-4">
-        {!isWaiting && (
+
+      {!isWaiting ||
+        (history.length === 5 && (
           <button
-            onClick={handleStop}
-            className={`px-6 py-3 ${
-              canClick ? "bg-black" : "bg-gray-500 cursor-not-allowed"
-            } rounded-lg text-white`}
-            disabled={!canClick}
-          >
-            {canClick ? "Start" : "Stop"}
-          </button>
-        )}
-        {!isWaiting && (
-          <button
-            onClick={handleReset}
-            className="px-6 py-3 bg-yellow-500 rounded-lg text-black"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReset();
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full text-black font-semibold shadow-lg hover:from-yellow-500 hover:to-yellow-600 transition-transform transform hover:scale-105"
           >
             Reset
           </button>
-        )}
-        {isWaiting && (
-          <button
-            onClick={handleMeasure}
-            className="px-6 py-3 bg-yellow-500 rounded-lg text-black"
-          >
-            Click to start
-          </button>
-        )}
-      </div>
-      <ul className="mt-8">
+        ))}
+
+      <ul className="mt-8 space-y-2 h-[200px]">
         {history.map((time, index) => (
-          <li key={index}>
+          <li key={index} className="text-lg">
             Try {index + 1}: {time} ms
           </li>
         ))}
       </ul>
+
+      <ResultModal ref={dialogRef} history={history} />
     </section>
   );
 }
