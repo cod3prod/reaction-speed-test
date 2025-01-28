@@ -48,7 +48,7 @@ export default function ReactionSpeed() {
               e.stopPropagation();
               handleReset();
             }}
-            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full text-black font-semibold shadow-lg hover:from-yellow-500 hover:to-yellow-600 transition-transform transform hover:scale-105"
+            className="px-6 py-3 bg-linear-to-r from-yellow-400 to-yellow-500 rounded-full text-black font-semibold shadow-lg hover:from-yellow-500 hover:to-yellow-600 transition-transform transform hover:scale-105"
           >
             Reset
           </button>
