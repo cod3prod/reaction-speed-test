@@ -1,25 +1,32 @@
 "use client";
 
 import { ResultModalHandle } from "@/types/modal";
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
-import 'animate.css';
+import "animate.css";
 
 const ResultModal = forwardRef<ResultModalHandle, { history: number[] }>(
   ({ history }, ref) => {
-
     const dialogRef = useRef<HTMLDialogElement>(null);
     const result = history.reduce((prev, curr) => prev + curr, 0);
-    
-    const [portalComponent, setPortalComponent] = useState<HTMLElement | null>(null);
+
+    const [portalComponent, setPortalComponent] = useState<HTMLElement | null>(
+      null
+    );
 
     useImperativeHandle(ref, () => ({
       open: () => dialogRef.current?.showModal(),
     }));
-    
-    useEffect(()=>{
+
+    useEffect(() => {
       setPortalComponent(document.body);
-    },[])
+    }, []);
 
     if (!portalComponent) {
       return null;
@@ -28,7 +35,7 @@ const ResultModal = forwardRef<ResultModalHandle, { history: number[] }>(
     return createPortal(
       <dialog
         ref={dialogRef}
-        className="w-full max-w-[300px] rounded-lg p-6 bg-white shadow-lg text-center animate__animated animate__zoomIn"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-[300px] rounded-lg p-6 bg-white shadow-lg text-center animate__animated animate__zoomIn backdrop:backdrop-blur-md"
       >
         <form method="dialog" className="space-y-4">
           <p className="text-lg font-bold">RESULT</p>

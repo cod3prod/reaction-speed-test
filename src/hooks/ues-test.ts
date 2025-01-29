@@ -52,7 +52,11 @@ const useTest = () => {
   }, [history, isWaiting, timeoutRef]);
 
   const handleStop = useCallback(() => {
-    if (!canClick || startTime === null || now === null) return;
+    if(!canClick) {
+      return alert("You can't click before it turns green.");
+    }
+
+    if (startTime === null || now === null) return;
 
     const reactionTime = Math.floor(now - startTime);
     setHistory((prev) => [...prev, reactionTime]);
